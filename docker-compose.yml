@@ -1,0 +1,97 @@
+x-default-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "5m"
+    max-file: "3"
+
+x-service-volume: &service-volume
+  - type: bind
+    source: ./src
+    target: /src
+  - type: bind
+    source: ./vendor
+    target: /vendor
+  - type: bind
+    source: ./runtime/spx
+    target: /tmp/spx
+  - type: bind
+    source: ./tests
+    target: /tests
+
+name: spx
+services:
+  fpm:
+    container_name: spx_fpm
+    profiles: [ "serve" ]
+    build:
+      context: .docker/php/fpm
+      target: app_devel
+      args:
+        UID: ${USER:-1} # ID:1 daemon, support: linux, mac
+        WORKDIR: "/src"
+    networks:
+      - profile
+    env_file:
+      - .docker/base.env
+    configs:
+      - source: spx
+        target: /usr/local/etc/php/conf.d/docker-php-ext-spx.ini
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "REQUEST_METHOD=GET cgi-fcgi -bind -connect :9000 || exit 1",
+        ]
+      interval: 2s
+      timeout: 5s
+      retries: 5
+      start_period: 3s
+      start_interval: 1s
+    volumes: *service-volume
+    logging: *default-logging
+
+  cli:
+    container_name: spx_cli
+    build:
+      context: .docker/php/cli
+      target: app_devel
+      args:
+        UID: ${USER:-1} # ID:1 daemon, support: linux, mac
+        WORKDIR: "/src"
+    env_file:
+      - .docker/base.env
+    configs:
+      - source: spx
+        target: /usr/local/etc/php/conf.d/docker-php-ext-spx.ini
+    volumes: *service-volume
+    logging: *default-logging
+
+  angie:
+    container_name: spx_angie
+    profiles: [ "serve" ]
+    build:
+      context: .docker/angie
+      target: app_devel
+    depends_on:
+      fpm:
+        condition: service_healthy
+    ports:
+      - "80:80"
+    networks:
+      - profile
+    configs:
+      - source: angie
+        target: /etc/angie/conf.d/default.conf
+    volumes: *service-volume
+    logging: *default-logging
+
+configs:
+  angie:
+    name: conf_v${VERSION:-1}
+    file: .docker/angie/conf/localhost.conf
+  spx:
+    name: conf_v${VERSION:-1}
+    file: .docker/php/docker-php-ext-spx.ini
+
+networks:
+  profile:
