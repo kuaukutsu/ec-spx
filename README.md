@@ -1,5 +1,7 @@
 # Example Code: SPX, which stands for Simple Profiling eXtension, is just another profiling extension for PHP.
 
+https://github.com/NoiseByNorthwest/php-spx
+
 ```shell
 make up
 ```
@@ -22,6 +24,3 @@ SPX_ENABLED=1 SPX_REPORT=full SPX_AUTO_START=0 php cli.php spx:start
 
 http://localhost/?SPX_UI_URI=/
 
-## Reference
-
-https://github.com/NoiseByNorthwest/php-spx
