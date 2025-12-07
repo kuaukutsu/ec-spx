@@ -2,15 +2,21 @@
 
 https://github.com/NoiseByNorthwest/php-spx
 
+## Example
+
 ```shell
 make up
 ```
 
-## HTTP app
+### Web UI
+
+http://localhost/?SPX_UI_URI=/
+
+### HTTP app
 
 http://localhost/?SPX_REPORT=full&SPX_ENABLED=1&SPX_AUTO_START=1
 
-## CLI app
+### CLI app
 
 ```shell
 make app
@@ -19,8 +25,3 @@ make app
 ```shell
 SPX_ENABLED=1 SPX_REPORT=full SPX_AUTO_START=0 php cli.php spx:start
 ```
-
-## Web UI
-
-http://localhost/?SPX_UI_URI=/
-
